@@ -1,0 +1,32 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "asia.gcr.io/${PROJECT_ID}/laravel-front:${_COMMIT_SHA}",
+        "-f",
+        "Dockerfile_nginx",
+        ".",
+      ]
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-t",
+        "asia.gcr.io/${PROJECT_ID}/laravel-app:${_COMMIT_SHA}",
+        "-f",
+        "Dockerfile_php",
+        ".",
+      ]
+images:
+  [
+    "asia.gcr.io/${PROJECT_ID}/laravel-front:${_COMMIT_SHA}",
+    "asia.gcr.io/${PROJECT_ID}/laravel-app:${_COMMIT_SHA}",
+  ]
+options:
+  machineType: "N1_HIGHCPU_8"
+tags: ["laravel"]
+logsBucket: gitlabci_cloudbuild
+substitutions:
+  _COMMIT_SHA: latest

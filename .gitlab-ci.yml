@@ -1,0 +1,31 @@
+variables:
+  REGISTRY: asia.gcr.io/dtamura
+  DOCKER_DRIVER: overlay2
+  MANIFEST_REPO: https://${GIT_USER}:${ACCESS_TOKEN}@gitlab.gcp.dtamura.com/sre/manifests
+
+stages:
+  - build
+  - update-manifest
+
+image-build:
+  stage: build
+  image: google/cloud-sdk:289.0.0
+  script:
+    - echo $GCLOUD_SERVICE_KEY | base64 --decode > key.json
+    - gcloud auth activate-service-account --key-file key.json
+    - gcloud builds submit --config cloudbuild.yaml --substitutions=_COMMIT_SHA="$CI_COMMIT_SHORT_SHA"
+
+# update-manifest:
+#   stage: update-manifest
+#   image: docker:19.03.8-git
+#   script:
+#     - set -x
+#     - mkdir manifests
+#     - git clone ${MANIFEST_REPO} manifests
+#     - cd manifests
+#     - sed -i "s/asia.gcr.io\/dtamura\/ping-pong:.*\"/asia.gcr.io\/dtamura\/ping-pong:$CI_COMMIT_SHORT_SHA\"/g" ping-pong-deployment.yaml
+#     - git config --global user.email gitlab-runner@dtamura.com
+#     - git config --global user.name gitlab-runner
+#     - git add ping-pong-deployment.yaml
+#     - git commit -m "Deploying image ${REGISTRY}/${IMAGE}:${CI_COMMIT_SHORT_SHA}"
+#     - git push -u origin master
