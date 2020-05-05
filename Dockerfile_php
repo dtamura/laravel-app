@@ -1,0 +1,20 @@
+FROM php:7.4.5-fpm
+
+
+
+RUN apt-get update -y && apt-get install -y zip unzip
+RUN  apt-get install -y libonig-dev
+RUN docker-php-ext-install pdo mbstring mysqli pdo_mysql
+
+COPY . /var/www/laravel
+RUN chown -R www-data:www-data /var/www
+
+USER www-data
+
+WORKDIR /var/www/laravel
+
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php \
+    && php -r "unlink('composer-setup.php');" \
+    && php composer.phar install --no-dev \
+    && rm composer.phar
